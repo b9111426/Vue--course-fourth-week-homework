@@ -1,8 +1,9 @@
 export let deleteModal = {}
 export default {
   props: ['tempProduct', 'apiUrl', 'apiPath'],
-  template: `<div id="delProductModal" ref="delProductModal" class="modal fade" tabindex="-1"
-  aria-labelledby="delProductModalLabel" aria-hidden="true">
+  template: /* html */`
+  <div id="delProductModal" ref="delProductModal" class="modal fade" tabindex="-1" aria-labelledby="delProductModalLabel"
+  aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content border-0">
       <div class="modal-header bg-danger text-white">
@@ -25,7 +26,8 @@ export default {
       </div>
     </div>
   </div>
-</div>`,
+</div>
+`,
   methods: {
     deleteProduct() {
       const url = `${this.apiUrl}/api/${this.apiPath}/admin/product/${this.tempProduct.id}`

@@ -22,7 +22,6 @@ const App = {
           window.location = './products.html'
         })
         .catch(err => {
-          console.dir(err)
           this.message = err.data.message
           errorWarnning.show()
 

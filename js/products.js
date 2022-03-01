@@ -7,8 +7,6 @@ import productDelModal, { deleteModal } from './productDelModal.js'
 
 let statusMessage = {}
 
-
-
 const App = createApp({
   components: {
     pagination,
@@ -22,11 +20,12 @@ const App = createApp({
       products: [],
       isNew: false,
       isSuccess: true,
-      message: '',
+      infoMessage: '',
       pagination: {},
       tempProduct: {
         imagesUrl: []
-      }
+      },
+      productErrorModal: false
     }
   },
   methods: {
@@ -37,16 +36,13 @@ const App = createApp({
           this.getProducts()
         })
         .catch(err => {
-          console.log(err.data)
+          this.infoMessage = err.data.message
+          this.isSuccess = false
           statusMessage.show()
-          this.message = err.data.message
-          this.isSuccess = err.data.success
-          // setTimeout(() => {
-          //   statusMessage.hide()
-          //   window.location = './index.html'
-          // }, 2000)
-
-
+          setTimeout(() => {
+            statusMessage.hide()
+            window.location = './index.html'
+          }, 2000)
         })
     },
     getProducts(page = 1) {
@@ -68,7 +64,7 @@ const App = createApp({
         productModal.show()
         this.isNew = true
       } else if (status === 'edit') {
-        this.tempProduct = { ...product }
+        this.tempProduct = { imagesUrl: [], ...product }
         productModal.show()
         this.isNew = false
       }
@@ -76,7 +72,22 @@ const App = createApp({
         this.tempProduct = { ...product }
         deleteModal.show()
       }
-    }
+    },
+    updateProduct(product, id) {
+      this.tempProduct = product
+      const productData = { data: this.tempProduct }
+      let url = `${this.apiUrl}/api/${this.apiPath}/admin/product/${id}`
+      axios.put(url, productData).then((res) => { }).catch((err) => { })
+    },
+    openStatusMessage(info, errModal, modalClass) {
+      this.infoMessage = info
+      this.productErrorModal = errModal
+      this.isSuccess = modalClass
+      statusMessage.show()
+      setTimeout(() => {
+        statusMessage.hide()
+      }, 1000)
+    },
   },
   mounted() {
     const token = document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/, '$1')
@@ -88,23 +99,34 @@ const App = createApp({
 })
 
 App.component('statusMessage', {
-  props: ['infoMessage', 'isSuccess'],
-  template: `<div class="modal fade" id="statusMessage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-aria-labelledby="staticBackdropLabel" aria-hidden="true">
-<div class="modal-dialog ">
-  <div class="modal-content">
-    <div class="modal-header" :class="[isSuccess ? 'bg-success':'bg-danger']">
-      <div class="container">
-        <h5 class="modal-title text-center text-white display-7" id="staticBackdropLabel">{{infoMessage}}</h5>
+  props: ['infoMessage', 'isSuccess', 'productErrorModal'],
+  template: /*html*/`
+  <div class="modal fade" id="statusMessage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true" ref="messageModal">
+  <div class="modal-dialog" :class=" [ productErrorModal ? 'modal-dialog-centered' :'null']">
+    <div class="modal-content">
+      <div class="modal-header" :class="[isSuccess ? 'bg-primary':'bg-danger']">
+        <div class="container">
+          <h5 class="modal-title text-center text-white display-7" id="staticBackdropLabel">{{infoMessage}}</h5>
+        </div>
       </div>
-    </div>
-    <i class="bi-exclamation-triangle  text-center text-danger  display-5"></i>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <div v-if="!isSuccess" class="d-flex justify-content-center">
+        <div class="d-inline-flex my-4 text-warning">
+          <i class="fas fa-exclamation-triangle fa-4x"></i>
+        </div>
+      </div>
+      <div v-else class="d-flex justify-content-center">
+        <div class="d-inline-flex my-4 text-success">
+          <i class="fas fa-check fa-4x"></i>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
   </div>
 </div>
-</div>`
+`
 
 })
 App.mount('#app')
